@@ -1,8 +1,10 @@
-# Metadata-Driven Data Platform — MVP
+# Curato
 
-A thin, runnable slice of the agentic, cloud-agnostic platform: **a PDF lands → agents read &
-extract it → metadata goes to a catalog → a business prompt becomes a validated, curated data
-product + a BI table — with a human approval gate.**
+**Curated data products, from a prompt.** A metadata-driven, agentic, cloud-agnostic data platform.
+
+A thin, runnable slice: **a PDF lands → agents read & extract it → metadata goes to a catalog → a
+business prompt becomes a validated, curated data product + a BI table — with a human approval
+gate.**
 
 It touches every box in the architecture so the whole loop is provable on a laptop. It runs
 **fully offline** (no cloud, no API key): the LLM is a *port* with a deterministic fallback, so you
