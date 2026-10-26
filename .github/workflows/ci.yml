@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install (with s3 + xlsx + test extras)
+        run: pip install -e ".[s3,xlsx,test]"
+
+      - name: End-to-end smoke test (offline)
+        run: curato demo
+
+      - name: Conformance + unit tests (local AND mocked S3 backends)
+        run: pytest -q

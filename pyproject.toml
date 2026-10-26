@@ -20,7 +20,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-llm = ["litellm>=1.40.0"]   # switch the LLM port from the stub to a real model
+llm = ["litellm>=1.40.0"]        # switch the LLM port from the stub to a real model
+xlsx = ["openpyxl>=3.1"]          # Excel source extractor
+s3 = ["boto3>=1.34"]              # S3 (and S3-compatible: MinIO/Ceph) storage adapter
+test = ["pytest>=8", "moto>=5", "boto3>=1.34", "openpyxl>=3.1"]
 
 [project.scripts]
 curato = "curato.cli:main"

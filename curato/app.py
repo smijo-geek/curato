@@ -13,7 +13,9 @@ from curato.ports.storage import get_storage
 from curato.ports.catalog import get_catalog
 from curato.ports.compute import get_compute
 from curato.ports.llm import get_llm
-from curato.ports.extraction import ExtractionRegistry, PdfInvoiceExtractor, CsvExtractor
+from curato.ports.extraction import (
+    ExtractionRegistry, PdfInvoiceExtractor, CsvExtractor, ExcelExtractor,
+)
 
 PKG = Path(__file__).resolve().parent
 
@@ -43,7 +45,9 @@ def build() -> dict:
         "catalog": get_catalog({"root": root}),
         "compute": get_compute(cfg),
         "llm": get_llm(cfg.get("llm", {})),
-        "extractor": ExtractionRegistry([PdfInvoiceExtractor(), CsvExtractor()]),
+        "extractor": ExtractionRegistry([
+            PdfInvoiceExtractor(), CsvExtractor(), ExcelExtractor(),
+        ]),
         "glossary": cfg["glossary"],
         "warehouse_root": str(project_dir() / "warehouse"),
     }

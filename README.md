@@ -102,7 +102,7 @@ the one that handles it, so adding a source never touches the agents.
 |--------|--------|----------|
 | PDF                     | ✅ shipped  | `pypdf` + rules (invoices); LLM/vision for arbitrary layouts |
 | CSV · TSV · delimited   | ✅ shipped  | stdlib, with numeric type coercion |
-| Excel                   | ⏳ planned | `openpyxl` adapter |
+| Excel (.xlsx/.xlsm)     | ✅ shipped  | `openpyxl` (the `xlsx` extra) |
 | Word · XML · text       | ⏳ planned | per-format extractor |
 | Images · video          | ⏳ planned | vision / Whisper transcript + frames (specialist) |
 | COBOL copybooks         | ⏳ planned | copybook parse + EBCDIC decode (specialist) |
@@ -124,12 +124,25 @@ keeps the demo fully runnable.
 - [x] Runnable PDF → catalog → prompt → curated product loop
 - [x] Ports & adapters; installable `curato` CLI
 - [x] Self-contained HTML BI report from the Curator (regenerated on every publish)
-- [x] Extractor registry + CSV/TSV source (multi-source seam)
-- [ ] More extractors: Excel, Word, XML, then SAP / Salesforce / RDBMS connectors
+- [x] Extractor registry + CSV/TSV + Excel sources (multi-source seam)
+- [x] S3 storage adapter + CI conformance suite (local **and** mocked S3)
+- [ ] More extractors: Word, XML, then SAP / Salesforce / RDBMS connectors
+- [ ] More cloud adapters: Spark (compute), OpenMetadata (catalog)
 - [ ] Real LangGraph + LLM-driven Transform for arbitrary prompts
-- [ ] Cloud adapters: S3, Spark, OpenMetadata — with a conformance test suite (CI on ≥2 backends)
 - [ ] A proper semantic-layer / glossary service
 - [ ] Video / COBOL ingestion (specialist)
+
+## Tests
+
+```bash
+pip install -e ".[s3,xlsx,test]"
+pytest -q
+```
+
+The suite includes a **storage conformance test** — the same contract run against the local
+adapter *and* a mocked S3 adapter (`moto`), which is how the cloud-agnostic claim is kept honest.
+CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs it on Python 3.10 and 3.12, plus
+`curato demo` as an end-to-end smoke test.
 
 ## Contributing
 

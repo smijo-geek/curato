@@ -100,6 +100,39 @@ class CsvExtractor(ExtractionPort):
         return Extraction(records=rows, raw_text=text)
 
 
+class ExcelExtractor(ExtractionPort):
+    """Reads .xlsx / .xlsm: the first row is the header, each later row a record. openpyxl returns
+    typed cells, so no coercion is needed. Needs the `xlsx` extra (openpyxl), imported lazily so the
+    package still works without it."""
+
+    def supports(self, filename: str) -> bool:
+        return filename.lower().endswith((".xlsx", ".xlsm"))
+
+    def extract(self, filename: str, data: bytes) -> Extraction:
+        from io import BytesIO
+        try:
+            from openpyxl import load_workbook
+        except ImportError as e:
+            raise RuntimeError("Excel source needs openpyxl — install with: pip install 'curato[xlsx]'") from e
+        wb = load_workbook(BytesIO(data), read_only=True, data_only=True)
+        ws = wb.active
+        it = ws.iter_rows(values_only=True)
+        try:
+            header = [str(h) if h is not None else f"col{i}" for i, h in enumerate(next(it))]
+        except StopIteration:
+            return Extraction(records=[], raw_text="")
+        records: List[Dict[str, Any]] = []
+        for row in it:
+            if row is None or all(c is None for c in row):
+                continue
+            rec = {header[i]: row[i] for i in range(min(len(header), len(row)))}
+            rec["source_file"] = filename
+            records.append(rec)
+        wb.close()
+        text = "\n".join(" ".join("" if v is None else str(v) for v in r.values()) for r in records)
+        return Extraction(records=records, raw_text=text)
+
+
 class ExtractionRegistry(ExtractionPort):
     """Holds many extractors and routes each file to the first that supports it. This is the
     'source can be anything' seam: register more extractors, nothing else changes."""

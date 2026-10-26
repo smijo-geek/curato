@@ -98,8 +98,16 @@ select it in config.
 
 ## Testing an adapter
 
-The direction of travel (see the roadmap) is a **conformance suite**: the same end-to-end pipeline
-run against every adapter — local, then S3, then ADLS — in CI. Until that lands, prove a new adapter
-by pointing a `config.yaml` at it and running `curato demo`; the output in `warehouse/curated/`
-should match the local run. A cloud-agnostic claim is only true while it's exercised on more than
-one backend.
+There is a **conformance suite** in [`tests/test_storage_conformance.py`](../tests/test_storage_conformance.py):
+one contract function run against every backend — today the local adapter and a mocked S3 adapter
+(`moto`), in CI on every push. Add your adapter to that parametrization so it's held to the same
+contract. Run it with:
+
+```bash
+pip install -e ".[s3,xlsx,test]"
+pytest -q
+```
+
+You can also prove an adapter by pointing a `config.yaml` at it and running `curato demo` — the
+output in `warehouse/curated/` should match the local run. A cloud-agnostic claim is only true while
+it's exercised on more than one backend.
