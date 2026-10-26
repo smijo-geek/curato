@@ -1,0 +1,14 @@
+# Bundled default config — used when the project directory has no config.yaml of its own.
+storage:
+  kind: local
+  root: .
+
+llm:
+  provider: auto
+  model: gpt-4o-mini
+
+glossary:
+  vendor_name:    [vendor, supplier, payee, "bill from"]
+  spend_amount:   [amount, "amount due", total, cost, "total due"]
+  invoice_date:   [date, "invoice date", "issued"]
+  invoice_number: ["invoice number", "invoice no", number, "inv no"]

@@ -5,9 +5,9 @@ from __future__ import annotations
 from typing import Dict, Any, List
 import re
 
-from ports.extraction import ExtractionPort
-from ports.llm import LLMPort
-from agents.graph import Graph, END
+from curato.ports.extraction import ExtractionPort
+from curato.ports.llm import LLMPort
+from curato.agents.graph import Graph, END
 
 _EMAIL = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")
 

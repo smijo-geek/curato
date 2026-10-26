@@ -6,10 +6,10 @@ from __future__ import annotations
 from typing import Dict, Any
 from pathlib import Path
 
-from ports.catalog import CatalogPort
-from ports.compute import ComputePort
-from ports.llm import LLMPort
-from agents.graph import Graph, END
+from curato.ports.catalog import CatalogPort
+from curato.ports.compute import ComputePort
+from curato.ports.llm import LLMPort
+from curato.agents.graph import Graph, END
 
 MAX_ATTEMPTS = 2
 

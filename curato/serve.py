@@ -1,31 +1,18 @@
-"""Turn a business prompt into a curated data product — with a mandatory human gate.
-
-Usage:
-    python run_serve.py "monthly spend by vendor"
-    python run_serve.py "total spend by vendor" --auto-approve
-"""
+"""Turn a business prompt into a curated data product — with a mandatory human gate."""
 from __future__ import annotations
-import sys
 import re
 
-from app import build
-from agents.state import new_state
-from agents.serving import make_serving_graph, run_curator
+from curato.app import build
+from curato.agents.state import new_state
+from curato.agents.serving import make_serving_graph, run_curator
 
 
 def slugify(prompt: str) -> str:
     return re.sub(r"[^a-z0-9]+", "_", prompt.lower()).strip("_")[:60] or "product"
 
 
-def main(argv: list[str]) -> int:
-    args = [a for a in argv if a != "--auto-approve"]
-    auto = "--auto-approve" in argv
-    if not args:
-        print('Give a prompt, e.g.  python run_serve.py "monthly spend by vendor"')
-        return 1
-    prompt = args[0]
-
-    env = build()
+def run_serve(prompt: str, auto_approve: bool = False, env: dict | None = None) -> int:
+    env = env or build()
     graph = make_serving_graph(env["catalog"], env["compute"], env["llm"])
     st = graph.invoke(new_state(prompt=prompt))
 
@@ -38,8 +25,8 @@ def main(argv: list[str]) -> int:
 
     v = st["validation"]
     print("\n" + "=" * 68)
-    print(f"PROMPT:  {prompt}")
-    print(f"INTENT:  {st['intent']}")
+    print(f"PROMPT:   {prompt}")
+    print(f"INTENT:   {st['intent']}")
     print(f"ATTEMPTS: {st['attempts']}   AGENT PATH: {' -> '.join(st['log'])}")
     print("-" * 68)
     print("GENERATED SQL:\n" + (st["sql"] or "(none)"))
@@ -55,9 +42,9 @@ def main(argv: list[str]) -> int:
         return 1
 
     # ---- HUMAN APPROVAL GATE (the Curator never auto-publishes) ----
-    if auto:
+    if auto_approve:
+        print("\n[--yes] gate auto-approved.")
         approved = True
-        print("\n[--auto-approve] gate bypassed for demo.")
     else:
         try:
             approved = input("\nApprove and publish this product? [y/N] ").strip().lower() == "y"
@@ -75,7 +62,3 @@ def main(argv: list[str]) -> int:
     print(f"  BI table (CSV): {p['csv']}")
     print(f"  curated parquet: {p['parquet']}")
     return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main(sys.argv[1:]))

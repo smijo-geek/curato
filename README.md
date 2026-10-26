@@ -32,27 +32,28 @@ landing/ (PDFs)
 
 The agents (`agents/`) depend only on these interfaces, never on a vendor SDK.
 
-## Run it (Windows PowerShell, from the repo root)
+## Install & run (Windows PowerShell)
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+pip install -e .           # installs the `curato` command
 
-# one command, the whole loop end-to-end (auto-approves the gate for the demo):
-python demo.py
+curato demo                # one command: the whole loop end-to-end (auto-approves)
 ```
 
-Or step through it:
+Or step through it, like dbt — from any directory with a `config.yaml` (this repo is the example project):
 
 ```powershell
-python scripts\make_sample_invoices.py      # drop sample invoice PDFs in landing/
-python run_ingest.py                         # agents read + catalog them
-python run_serve.py "monthly spend by vendor"  # prompt -> product (asks you to approve)
+curato samples                        # drop sample invoice PDFs in landing/
+curato ingest                         # agents read landing/ -> catalog + bronze
+curato serve "monthly spend by vendor"  # prompt -> product (asks you to approve)
+curato catalog                        # see what's been cataloged and published
 ```
 
-Other prompts the MVP understands out of the box:
+Other prompts it understands out of the box:
 `"total spend by vendor"`, `"number of invoices by vendor"`, `"monthly spend"`.
+Add `-y` to `serve` to auto-approve the gate.
 
 ## Where the AI plugs in
 

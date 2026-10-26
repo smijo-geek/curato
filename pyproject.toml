@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "curato"
+version = "0.1.0"
+description = "Curated data products, from a prompt. A metadata-driven, agentic, cloud-agnostic data platform."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [{ name = "smijo-geek" }]
+keywords = ["data-platform", "metadata", "agents", "etl", "data-products", "llm"]
+dependencies = [
+    "pypdf>=4.2.0",
+    "duckdb>=1.0.0",
+    "pandas>=2.0.0",
+    "PyYAML>=6.0",
+    "reportlab>=4.0.0",   # for `curato samples` / `curato demo`
+]
+
+[project.optional-dependencies]
+llm = ["litellm>=1.40.0"]   # switch the LLM port from the stub to a real model
+
+[project.scripts]
+curato = "curato.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/smijo-geek/curato"
+
+[tool.setuptools]
+packages = ["curato", "curato.ports", "curato.agents"]
+
+[tool.setuptools.package-data]
+curato = ["default_config.yaml"]
