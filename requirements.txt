@@ -1,0 +1,12 @@
+# Core (required to run the offline demo)
+pypdf>=4.2.0
+duckdb>=1.0.0
+pandas>=2.0.0
+PyYAML>=6.0
+
+# Sample-data generator (dev only)
+reportlab>=4.0.0
+
+# Optional: switch the LLM port from the deterministic stub to a real model.
+# Uncomment to enable, then set a provider key (e.g. OPENAI_API_KEY).
+# litellm>=1.40.0

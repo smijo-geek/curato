@@ -1,0 +1,18 @@
+# Platform configuration. Everything cloud-specific is selected here, never in the agents.
+
+storage:
+  kind: local            # local | s3 | adls | gcs  (only 'local' implemented in the MVP)
+  root: .                # bucket/root. landing/ warehouse/ catalog/ live under this.
+
+llm:
+  provider: auto         # auto = use LiteLLM if a key is set, else the deterministic stub
+  model: gpt-4o-mini     # used only when a real provider is active
+
+# The semantic layer, in miniature. Maps messy source field names to canonical business terms.
+# In production this is a real glossary service (OpenMetadata/Purview); here it is enough to
+# prove grounding: the Resolver only ever maps a prompt to terms that exist here.
+glossary:
+  vendor_name:    [vendor, supplier, payee, "bill from"]
+  spend_amount:   [amount, "amount due", total, cost, "total due"]
+  invoice_date:   [date, "invoice date", "issued"]
+  invoice_number: ["invoice number", "invoice no", number, "inv no"]
