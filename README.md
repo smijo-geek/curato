@@ -3,6 +3,7 @@
 **Curated data products, from a prompt.**
 A metadata-driven, agentic, cloud-agnostic data platform.
 
+[![CI](https://github.com/smijo-geek/curato/actions/workflows/ci.yml/badge.svg)](https://github.com/smijo-geek/curato/actions/workflows/ci.yml)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Status: MVP](https://img.shields.io/badge/status-MVP-orange.svg)](#roadmap)
