@@ -16,3 +16,33 @@ glossary:
   spend_amount:   [amount, "amount due", total, cost, "total due"]
   invoice_date:   [date, "invoice date", "issued"]
   invoice_number: ["invoice number", "invoice no", number, "inv no"]
+
+# Connection-based sources for `curato pull` (database / SAP CDS / Salesforce).
+# Uncomment and fill in. The catalog is generated automatically from each source's own metadata.
+# sources:
+#   mydb:
+#     kind: rdbms
+#     url: "postgresql+psycopg://user:pw@host:5432/dbname"   # any SQLAlchemy URL
+#     tables: [sales, customers]          # optional; omit to pull every table
+#
+#   sap_finance:                           # SAP CDS views over the HANA SQL interface
+#     kind: sap
+#     access: hana
+#     url: "hana+hdbcli://user:pw@host:39015"   # needs the `hana` extra
+#     view_prefix: "ZC_"                   # your CDS naming convention
+#     objects: [ZC_SpendByVendor]
+#
+#   sap_cloud:                             # SAP CDS views published as OData (e.g. S/4HANA Cloud)
+#     kind: sap
+#     access: odata
+#     service_url: "https://my-s4.example.com/sap/opu/odata/sap/ZSPEND_SRV"
+#     user: "CURATO_SVC"
+#     password: "..."                      # prefer an env var / secret store in production
+#     entities: [SpendByVendor]
+#
+#   salesforce:
+#     kind: salesforce
+#     username: "svc@example.com"
+#     password: "..."
+#     security_token: "..."
+#     objects: [Opportunity, Account]

@@ -48,6 +48,7 @@ project, exactly like a dbt project dir):
 ```bash
 curato samples                           # drop sample invoice PDFs in landing/
 curato ingest                            # agents read landing/ → catalog + bronze
+# curato pull mydb                       # OR pull from a DB / SAP CDS / Salesforce source
 curato serve "monthly spend by vendor"   # prompt → product (asks you to approve; -y to skip)
 curato catalog                           # list datasets and published products
 ```
@@ -107,7 +108,34 @@ the one that handles it, so adding a source never touches the agents.
 | Word · XML · text       | ⏳ planned | per-format extractor |
 | Images · video          | ⏳ planned | vision / Whisper transcript + frames (specialist) |
 | COBOL copybooks         | ⏳ planned | copybook parse + EBCDIC decode (specialist) |
-| SAP · Salesforce · RDBMS| ⏳ planned | connector extractors (API / JDBC) |
+
+**Connection-based sources** (databases, SAP, Salesforce) are *pulled*, not dropped as files —
+see [Connect a database, SAP, or Salesforce](#connect-a-database-sap-or-salesforce) below.
+
+### Connect a database, SAP, or Salesforce
+
+Connection sources are *pulled*, not landed — and the **catalog is generated from the source's own
+metadata** (table / field / view definitions), with nothing written by hand.
+
+| Source | Status | Approach |
+|--------|--------|----------|
+| RDBMS — Postgres · MySQL · SQL Server · Oracle · SQLite | ✅ shipped (SQLite-tested) | SQLAlchemy — one class, any dialect |
+| SAP CDS views over **HANA SQL**        | ✅ logic tested | CDS views are SQL views in HANA; `hana` extra + a HANA URL |
+| SAP CDS views over **OData** (S/4HANA Cloud) | ✅ logic tested | published entity sets over HTTP |
+| Salesforce                             | ✅ logic tested (mock) | simple-salesforce describe + SOQL |
+
+Configure sources in `config.yaml` (there's a commented block with examples), then:
+
+```bash
+curato pull mydb                                      # introspect + load + auto-catalog every table
+curato catalog                                        # the catalog filled itself from the source
+curato serve "total spend by vendor" -d mydb.sales    # build a product from a cataloged dataset
+```
+
+> **"logic tested"** means the connector's introspection/query logic is unit-tested (SQLite for the
+> SQL path, a mock HTTP session for OData, a mock client for Salesforce). The live drivers — a real
+> HANA, a real SAP OData service, a real Salesforce org — need those systems to run end-to-end.
+> Install what you need: `pip install -e ".[rdbms]"` · `".[hana]"` · `".[sap]"` · `".[sf]"`.
 
 ### Plugging in a real model
 
@@ -127,7 +155,8 @@ keeps the demo fully runnable.
 - [x] Self-contained HTML BI report from the Curator (regenerated on every publish)
 - [x] Extractor registry + CSV/TSV + Excel sources (multi-source seam)
 - [x] S3 storage adapter + CI conformance suite (local **and** mocked S3)
-- [ ] More extractors: Word, XML, then SAP / Salesforce / RDBMS connectors
+- [x] Connection sources + auto-catalog: RDBMS (SQLAlchemy), SAP CDS (HANA + OData), Salesforce
+- [ ] More file extractors: Word, XML
 - [ ] More cloud adapters: Spark (compute), OpenMetadata (catalog)
 - [ ] Real LangGraph + LLM-driven Transform for arbitrary prompts
 - [ ] A proper semantic-layer / glossary service

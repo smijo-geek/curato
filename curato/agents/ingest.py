@@ -8,6 +8,7 @@ import re
 from curato.ports.extraction import ExtractionPort
 from curato.ports.llm import LLMPort
 from curato.agents.graph import Graph, END
+from curato.glossary import map_terms
 
 _EMAIL = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")
 
@@ -50,14 +51,9 @@ def make_ingest_graph(extractor: ExtractionPort, llm: LLMPort, glossary: Dict[st
 
     def mapping(state: Dict[str, Any]) -> Dict[str, Any]:
         # Ground each source field onto a canonical glossary term. This is the semantic step the
-        # LLM owns in production; here it is a synonym lookup so the demo is deterministic.
-        syn = {s.lower(): term for term, syns in glossary.items() for s in list(syns) + [term]}
-        mapping: Dict[str, str] = {}
-        for field in (state["schema"] or {}):
-            canon = syn.get(field.lower().replace("_", " "))
-            if canon:
-                mapping[field] = canon
-        state["mapping"] = mapping
+        # LLM owns in production; here it is a synonym lookup (shared with the pull path) so the
+        # demo is deterministic.
+        state["mapping"] = map_terms((state["schema"] or {}).keys(), glossary)
         return state
 
     g = Graph()

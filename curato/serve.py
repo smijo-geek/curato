@@ -11,9 +11,10 @@ def slugify(prompt: str) -> str:
     return re.sub(r"[^a-z0-9]+", "_", prompt.lower()).strip("_")[:60] or "product"
 
 
-def run_serve(prompt: str, auto_approve: bool = False, env: dict | None = None) -> int:
+def run_serve(prompt: str, auto_approve: bool = False, dataset: str = "invoices",
+              env: dict | None = None) -> int:
     env = env or build()
-    graph = make_serving_graph(env["catalog"], env["compute"], env["llm"])
+    graph = make_serving_graph(env["catalog"], env["compute"], env["llm"], dataset=dataset)
     st = graph.invoke(new_state(prompt=prompt))
 
     r = st["resolved"]

@@ -36,9 +36,14 @@ def _cmd_ingest(args) -> int:
     return run_ingest()
 
 
+def _cmd_pull(args) -> int:
+    from curato.pull import run_pull
+    return run_pull(args.source)
+
+
 def _cmd_serve(args) -> int:
     from curato.serve import run_serve
-    return run_serve(args.prompt, auto_approve=args.yes)
+    return run_serve(args.prompt, auto_approve=args.yes, dataset=args.dataset)
 
 
 def _cmd_catalog(args) -> int:
@@ -70,9 +75,15 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("samples", help="generate sample invoice PDFs").set_defaults(func=_cmd_samples)
     sub.add_parser("ingest", help="read landing/ and catalog the metadata").set_defaults(func=_cmd_ingest)
 
+    pl = sub.add_parser("pull", help="pull from connection sources (RDBMS/SAP/Salesforce) and auto-catalog")
+    pl.add_argument("source", nargs="?", help="a source name from config.yaml; omit to pull all")
+    pl.set_defaults(func=_cmd_pull)
+
     s = sub.add_parser("serve", help="turn a prompt into a curated data product")
     s.add_argument("prompt", help='e.g. "monthly spend by vendor"')
     s.add_argument("-y", "--yes", action="store_true", help="auto-approve the human gate")
+    s.add_argument("-d", "--dataset", default="invoices",
+                   help="catalog dataset to build from (e.g. mydb.sales); default: invoices")
     s.set_defaults(func=_cmd_serve)
 
     c = sub.add_parser("catalog", help="print the catalog contents")

@@ -18,6 +18,15 @@ one or more local, open-source implementations.
 | Compute    | `ports/compute.py`    | `query`, `write_table` |
 | LLM        | `ports/llm.py`        | `complete` (+ optional `explain_product`) |
 
+## A sixth port: connection-based sources
+
+Databases, SAP and Salesforce aren't files — you query them. They implement `SourceConnector`
+([`curato/ports/sources.py`](../curato/ports/sources.py)) with three methods: `list_objects()`,
+`schema(obj)`, and `fetch(obj)`. Because `schema()` reads the system's *own* metadata, `curato pull`
+generates the catalog automatically. `RDBMSConnector` already covers every SQLAlchemy dialect, and
+`SAPCDSConnector` handles CDS views over HANA SQL or OData — add a new system by implementing those
+three methods and registering it in `build_connector()`.
+
 ## Recipe: add an S3 storage adapter
 
 1. **Implement the port.** Subclass `StoragePort` and fill in the four methods.
