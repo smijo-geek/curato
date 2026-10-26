@@ -52,7 +52,9 @@ def make_serving_graph(catalog: CatalogPort, compute: ComputePort, llm: LLMPort,
             col = term2col.get("spend_amount")
             if not col:
                 resolved["errors"].append("no 'spend_amount' in catalog to sum")
-            resolved["measure_sql"] = f"SUM({col})"
+            # TRY_CAST so the measure sums correctly whatever the source typed it as
+            # (a CSV/text source hands us strings; a PDF rule already parsed a float).
+            resolved["measure_sql"] = f"SUM(TRY_CAST({col} AS DOUBLE))"
             resolved["measure_name"] = "total_spend"
 
         # dimensions — only those grounded in the catalog survive
@@ -144,6 +146,12 @@ def run_curator(state: Dict[str, Any], product_name: str, catalog: CatalogPort,
 
     cols = list(df.columns)
     description = llm.explain_product(product_name, state["sql"], cols)
+
+    # Self-contained HTML BI report — a real pipeline artifact, regenerated on every publish.
+    from curato.report import generate as generate_report
+    out_html = str(Path(warehouse_root) / "curated" / f"{product_name}.html")
+    generate_report(df, product_name, state["prompt"], state["sql"], description, out_html)
+
     catalog.put_product(product_name, {
         "prompt": state["prompt"],
         "sql": state["sql"],
@@ -151,9 +159,10 @@ def run_curator(state: Dict[str, Any], product_name: str, catalog: CatalogPort,
         "rows": int(len(df)),
         "location": out_parquet,
         "bi_table": out_csv,
+        "report": out_html,
         "description": description,
         "approved": True,
     })
     state["product"] = {"name": product_name, "table": df, "csv": out_csv,
-                        "parquet": out_parquet, "description": description}
+                        "parquet": out_parquet, "report": out_html, "description": description}
     return state

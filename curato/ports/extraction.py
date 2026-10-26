@@ -1,7 +1,13 @@
-"""Extraction port — turns an unstructured file into (records, raw_text).
+"""Extraction port — turns a source file into (records, raw_text).
 
-MVP default: pypdf text + rules tuned for invoices. Production adapters (Docling, Azure Doc
-Intelligence, Textract) implement the same interface and handle arbitrary layouts / OCR.
+A source can be anything: PDF, Word, Excel, CSV/TSV/delimited, text, XML, images, video, COBOL
+copybooks, or a system like SAP or Salesforce. Each source type is one `ExtractionPort`; the
+`ExtractionRegistry` dispatches a file to the first extractor that `supports()` it. Adding a new
+source is therefore a single new class — the agents never change.
+
+Shipped here: a rules-based PDF invoice reader and a generic CSV/TSV reader (both stdlib / pypdf,
+offline). See docs/adapters.md for the pattern; the cloud/LLM extractors (Docling, Azure Doc
+Intelligence, Textract, Unstructured) implement the same two methods.
 """
 from __future__ import annotations
 from abc import ABC, abstractmethod
@@ -57,3 +63,58 @@ class PdfInvoiceExtractor(ExtractionPort):
                 rec[key] = m.group(1).strip()
         rec["source_file"] = filename
         return Extraction(records=[rec] if rec.get("invoice_number") else [], raw_text=text)
+
+
+def _coerce(v):
+    """Best-effort type inference for a cell: int, then float, else the original string."""
+    if v is None or v == "":
+        return None
+    try:
+        return int(v)
+    except (ValueError, TypeError):
+        pass
+    try:
+        return float(v)
+    except (ValueError, TypeError):
+        return v
+
+
+class CsvExtractor(ExtractionPort):
+    """Generic tabular reader for CSV / TSV / delimited text. Each row becomes a record; column
+    names flow straight into the Profiler and the glossary Mapping. Numeric cells are coerced so
+    downstream aggregations get real types."""
+
+    def supports(self, filename: str) -> bool:
+        return filename.lower().endswith((".csv", ".tsv"))
+
+    def extract(self, filename: str, data: bytes) -> Extraction:
+        import csv
+        from io import StringIO
+        text = data.decode("utf-8-sig", errors="replace")
+        delim = "\t" if filename.lower().endswith(".tsv") else ","
+        rows = list(csv.DictReader(StringIO(text), delimiter=delim))
+        for r in rows:
+            for k in list(r.keys()):
+                r[k] = _coerce(r[k])
+            r["source_file"] = filename
+        return Extraction(records=rows, raw_text=text)
+
+
+class ExtractionRegistry(ExtractionPort):
+    """Holds many extractors and routes each file to the first that supports it. This is the
+    'source can be anything' seam: register more extractors, nothing else changes."""
+
+    def __init__(self, extractors: List[ExtractionPort]):
+        self.extractors = extractors
+
+    def _for(self, filename: str) -> ExtractionPort | None:
+        return next((e for e in self.extractors if e.supports(filename)), None)
+
+    def supports(self, filename: str) -> bool:
+        return self._for(filename) is not None
+
+    def extract(self, filename: str, data: bytes) -> Extraction:
+        ex = self._for(filename)
+        if ex is None:
+            return Extraction(records=[], raw_text="")
+        return ex.extract(filename, data)

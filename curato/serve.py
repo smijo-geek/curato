@@ -59,6 +59,7 @@ def run_serve(prompt: str, auto_approve: bool = False, env: dict | None = None) 
     p = st["product"]
     print(f"\nPUBLISHED data product '{p['name']}'")
     print(f"  description: {p['description']}")
-    print(f"  BI table (CSV): {p['csv']}")
-    print(f"  curated parquet: {p['parquet']}")
+    print(f"  BI report (HTML): {p['report']}")
+    print(f"  BI table (CSV):   {p['csv']}")
+    print(f"  curated parquet:  {p['parquet']}")
     return 0

@@ -16,9 +16,10 @@ def run_ingest(env: dict | None = None) -> int:
     storage, catalog, compute = env["storage"], env["catalog"], env["compute"]
     graph = make_ingest_graph(env["extractor"], env["llm"], env["glossary"])
 
-    files = [f for f in storage.list("landing") if f.lower().endswith(".pdf")]
+    extractor = env["extractor"]
+    files = [f for f in storage.list("landing") if extractor.supports(f)]
     if not files:
-        print("Nothing in landing/. Run:  curato samples")
+        print("No supported files in landing/. Run:  curato samples")
         return 1
 
     all_records, schema, mapping, pii = [], {}, {}, False

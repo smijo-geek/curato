@@ -38,7 +38,8 @@ curato catalog       # see what the agents learned and published
 ```
 
 `curato demo` generates seven sample invoice PDFs, lets the agents read and catalog them, then turns
-the prompt *“monthly spend by vendor”* into a validated data product in `warehouse/curated/`.
+the prompt *“monthly spend by vendor”* into a validated data product in `warehouse/curated/` — a
+parquet table, a CSV, and a **self-contained HTML BI report** you can open in any browser.
 
 Step through it yourself — from any directory with a `config.yaml` (this repo is the example
 project, exactly like a dbt project dir):
@@ -84,13 +85,28 @@ default; a production deployment adds one adapter per cloud — the agents never
 | Port | Default (local, open source) | Production adapters |
 |------|------------------------------|---------------------|
 | Storage    | local filesystem (S3-style API) | S3 · ADLS · GCS · MinIO · HDFS |
-| Extraction | `pypdf` + rules                 | Docling · Azure Doc Intelligence · Textract |
+| Extraction | PDF (rules) + CSV/TSV, via a registry | Docling · Azure Doc Intelligence · Textract · Unstructured |
 | Catalog    | JSON file                       | OpenMetadata · Polaris · Purview |
 | Compute    | DuckDB                          | Spark · Trino |
 | LLM        | deterministic stub              | LiteLLM → any model (incl. Ollama, offline) |
 
 Want to add one? See **[`docs/adapters.md`](docs/adapters.md)** — writing an adapter is the easiest
 way to contribute.
+
+### Any source, one extractor each
+
+A source can be anything. Each type is a single `ExtractionPort`; the registry routes each file to
+the one that handles it, so adding a source never touches the agents.
+
+| Source | Status | Approach |
+|--------|--------|----------|
+| PDF                     | ✅ shipped  | `pypdf` + rules (invoices); LLM/vision for arbitrary layouts |
+| CSV · TSV · delimited   | ✅ shipped  | stdlib, with numeric type coercion |
+| Excel                   | ⏳ planned | `openpyxl` adapter |
+| Word · XML · text       | ⏳ planned | per-format extractor |
+| Images · video          | ⏳ planned | vision / Whisper transcript + frames (specialist) |
+| COBOL copybooks         | ⏳ planned | copybook parse + EBCDIC decode (specialist) |
+| SAP · Salesforce · RDBMS| ⏳ planned | connector extractors (API / JDBC) |
 
 ### Plugging in a real model
 
@@ -107,9 +123,10 @@ keeps the demo fully runnable.
 
 - [x] Runnable PDF → catalog → prompt → curated product loop
 - [x] Ports & adapters; installable `curato` CLI
-- [ ] More extractors: Excel / CSV / relational DB
+- [x] Self-contained HTML BI report from the Curator (regenerated on every publish)
+- [x] Extractor registry + CSV/TSV source (multi-source seam)
+- [ ] More extractors: Excel, Word, XML, then SAP / Salesforce / RDBMS connectors
 - [ ] Real LangGraph + LLM-driven Transform for arbitrary prompts
-- [ ] A dashboard output (self-contained HTML BI report) from the Curator
 - [ ] Cloud adapters: S3, Spark, OpenMetadata — with a conformance test suite (CI on ≥2 backends)
 - [ ] A proper semantic-layer / glossary service
 - [ ] Video / COBOL ingestion (specialist)
