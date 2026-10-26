@@ -137,6 +137,9 @@ curato serve "total spend by vendor" -d mydb.sales    # build a product from a c
 > HANA, a real SAP OData service, a real Salesforce org — need those systems to run end-to-end.
 > Install what you need: `pip install -e ".[rdbms]"` · `".[hana]"` · `".[sap]"` · `".[sf]"`.
 
+**Full runbook** — exact URL formats (incl. the two SAP CDS modes), drivers, credentials/secrets,
+and troubleshooting: **[`docs/connectors.md`](docs/connectors.md)**.
+
 ### Plugging in a real model
 
 ```bash
