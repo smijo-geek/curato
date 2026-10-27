@@ -1,0 +1,26 @@
+# Curato project config for the SAP demo.
+# The source is SAP CDS views. Here the URL points at a local SQLite stand-in for HANA so the demo
+# runs on a laptop; in a real landscape this is your HANA URL and nothing else changes:
+#   url: "hana+hdbcli://USER:PW@hana-host:39015"   (needs: pip install -e ".[hana]")
+
+storage:
+  kind: local
+  root: .
+
+llm:
+  provider: stub        # deterministic, offline — no API key needed for the demo
+
+# The business glossary — the semantic layer. Maps SAP column names to business terms so a
+# plain-language prompt resolves to the right fields.
+glossary:
+  vendor_name:    [vendor, supplier, payee, lifnr]
+  spend_amount:   [amount, "amount due", total, dmbtr, wrbtr]
+  invoice_date:   [posting_date, "posting date", budat, date]
+  invoice_number: [doc_no, "doc no", belnr, "document no"]
+
+sources:
+  sap_finance:
+    kind: sap
+    access: hana
+    url: "sqlite:///sap_hana.db"     # stand-in for HANA; real: hana+hdbcli://host:39015
+    view_prefix: "ZC_"               # pull the CDS consumption views

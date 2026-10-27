@@ -10,3 +10,5 @@ dist/
 landing/
 warehouse/
 catalog/
+# Generated sample databases
+*.db
